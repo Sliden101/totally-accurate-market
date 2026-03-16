@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  @apply border-surface-alt;
+}
+
+html {
+  @apply bg-background text-text;
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply font-sans antialiased;
+  background: linear-gradient(135deg, #0F172A 0%, #1A1F35 100%);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  @apply w-2;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-surface;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-surface-alt rounded-full hover:bg-text-muted;
+}
+
+/* Selection styling */
+::selection {
+  @apply bg-primary text-background;
+}
+
+/* Utility classes */
+.glass {
+  @apply backdrop-blur-md bg-white/10 border border-white/20;
+}
+
+.button-base {
+  @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary;
+}
+
+.button-primary {
+  @apply button-base bg-primary text-background hover:bg-orange-600 active:scale-95;
+}
+
+.button-secondary {
+  @apply button-base bg-surface-alt text-text hover:bg-surface border border-surface-alt;
+}
+
+.button-ghost {
+  @apply button-base text-text hover:bg-surface-alt;
+}
+
+.input-base {
+  @apply w-full py-2 rounded-lg bg-surface border border-surface-alt text-text placeholder-text-muted focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors;
+}
+
+.card {
+  @apply bg-surface border border-surface-alt rounded-xl p-6 transition-all duration-300;
+}
+
+.card-hover {
+  @apply card hover:border-primary hover:shadow-lg hover:shadow-primary/20;
+}
