@@ -6,7 +6,7 @@ import { useBets } from '../context/BetContext'
 import { useWallet } from '../context/WalletContext'
 import { useNotification } from '../context/NotificationContext'
 import BettingCard from '../components/BettingCard'
-import { ArrowLeft, TrendingUp, TrendingDown, Clock } from 'lucide-react'
+import { ArrowLeft, Clock } from 'lucide-react'
 
 export default function EventDetailPage() {
   const { id } = useParams()
@@ -25,9 +25,9 @@ export default function EventDetailPage() {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="text-center space-y-4">
-          <h1 className="text-2xl font-bold">Market not found</h1>
+          <h1 className="text-2xl font-display font-bold">NOT FOUND</h1>
           <button onClick={() => navigate('/events')} className="button-primary">
-            Back to Markets
+            BACK
           </button>
         </div>
       </div>
@@ -36,28 +36,28 @@ export default function EventDetailPage() {
 
   const handlePlaceBet = () => {
     if (!selectedOutcome) {
-      error('Please select an outcome')
+      error('PICK AN OUTCOME')
       return
     }
 
     if (!betAmount || parseFloat(betAmount) <= 0) {
-      error('Please enter a valid amount')
+      error('ENTER AN AMOUNT')
       return
     }
 
     const amount = parseFloat(betAmount)
     if (amount > getBalance()) {
-      error('Insufficient balance')
+      error('INSUFFICIENT BALANCE')
       return
     }
 
     try {
       placeBet(event.id, selectedOutcome, amount)
-      success(`Bet placed! $${amount} on ${selectedOutcome}`)
+      success(`BET PLACED: $${amount} ON ${selectedOutcome.toUpperCase()}`)
       setBetAmount('')
       setSelectedOutcome(null)
     } catch (err) {
-      error('Failed to place bet')
+      error('BET FAILED')
     }
   }
 
@@ -68,112 +68,95 @@ export default function EventDetailPage() {
   return (
     <div className="min-h-screen py-8 px-4">
       <div className="max-w-4xl mx-auto space-y-8">
-        {/* Back Button */}
         <button
           onClick={() => navigate('/events')}
-          className="flex items-center gap-2 text-text-muted hover:text-primary transition"
+          className="flex items-center gap-2 font-mono text-sm uppercase tracking-widest text-text-muted hover:text-primary transition-colors"
         >
-          <ArrowLeft size={20} />
-          Back to Markets
+          <ArrowLeft size={16} />
+          BACK
         </button>
 
-        {/* Event Header */}
-        <div className="card space-y-6">
-          {event.image && (
-            <img
-              src={event.image}
-              alt={event.title}
-              className="w-full h-64 object-cover rounded-lg"
-            />
-          )}
+        {event.image && (
+          <img
+            src={event.image}
+            alt={event.title}
+            className="w-full h-64 object-cover border-2 border-surface-alt"
+          />
+        )}
 
-          <div className="space-y-4">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1">
-                <div className="inline-block px-3 py-1 bg-surface rounded text-sm text-primary mb-2">
-                  {event.category}
-                </div>
-                <h1 className="text-4xl font-accent font-bold text-balance">{event.title}</h1>
-              </div>
-              <div className={`px-4 py-2 rounded-lg font-medium ${
-                event.status === 'open'
-                  ? 'bg-green-900/20 text-success'
-                  : 'bg-surface-alt text-text-muted'
-              }`}>
-                {event.status === 'open' ? 'Open' : 'Closed'}
-              </div>
+        <div className="space-y-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <span className="font-mono text-xs uppercase tracking-widest text-text-muted">
+                {event.category}
+              </span>
+              <h1 className="text-3xl md:text-4xl font-display font-bold leading-tight mt-2">
+                {event.title}
+              </h1>
             </div>
+            <div className={`px-4 py-2 font-mono text-sm uppercase tracking-widest ${
+              event.status === 'open'
+                ? 'bg-success/10 text-success border border-success'
+                : 'bg-surface border border-surface-alt text-text-muted'
+            }`}>
+              {event.status === 'open' ? 'OPEN' : 'CLOSED'}
+            </div>
+          </div>
 
-            <p className="text-text-muted text-lg">{event.description}</p>
+          <p className="text-text-muted font-mono text-sm">{event.description}</p>
 
-            {/* Event Stats */}
-            <div className="grid grid-cols-3 gap-4 pt-4">
-              <div className="bg-surface rounded p-4 text-center">
-                <div className="text-sm text-text-muted mb-1">Volume</div>
-                <div className="text-2xl font-bold text-primary">
-                  ${(event.totalVolume / 1000).toFixed(0)}K
-                </div>
-              </div>
-              <div className="bg-surface rounded p-4 text-center">
-                <div className="text-sm text-text-muted mb-1">Time Left</div>
-                <div className="text-2xl font-bold text-secondary flex items-center justify-center gap-2">
-                  <Clock size={20} />
-                  {daysRemaining}d
-                </div>
-              </div>
-              <div className="bg-surface rounded p-4 text-center">
-                <div className="text-sm text-text-muted mb-1">Status</div>
-                <div className="text-2xl font-bold">
-                  {event.status === 'open' ? 'Active' : 'Resolved'}
-                </div>
-              </div>
+          <div className="flex gap-8 py-4 border-y border-surface-alt font-mono text-sm">
+            <div>
+              <span className="text-text-muted">VOLUME</span>
+              <span className="ml-2 text-primary font-bold">${(event.totalVolume / 1000).toFixed(0)}K</span>
+            </div>
+            <div>
+              <span className="text-text-muted">TIME</span>
+              <span className="ml-2 text-accent font-bold">{daysRemaining}d LEFT</span>
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Odds Section */}
-          <div className="lg:col-span-2 card">
-            <h2 className="text-2xl font-accent font-bold mb-6">Current Odds</h2>
-            
-            <div className="grid grid-cols-2 gap-4 mb-8">
-              <div className="bg-surface rounded-lg p-6 text-center cursor-pointer hover:border-primary border-2 border-transparent transition"
-                   onClick={() => setSelectedOutcome('yes')}>
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <TrendingUp className="w-5 h-5 text-success" />
-                  <span className="font-bold">YES</span>
-                </div>
-                <div className="text-4xl font-bold text-success">
-                  {(event.currentOdds.yes * 100).toFixed(0)}%
-                </div>
-              </div>
-              <div className="bg-surface rounded-lg p-6 text-center cursor-pointer hover:border-primary border-2 border-transparent transition"
-                   onClick={() => setSelectedOutcome('no')}>
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <TrendingDown className="w-5 h-5 text-danger" />
-                  <span className="font-bold">NO</span>
-                </div>
-                <div className="text-4xl font-bold text-danger">
-                  {(event.currentOdds.no * 100).toFixed(0)}%
-                </div>
-              </div>
+          <div className="lg:col-span-2 space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => setSelectedOutcome('yes')}
+                className={`py-8 border-2 font-mono text-center transition-all ${
+                  selectedOutcome === 'yes'
+                    ? 'border-success bg-success/10 text-success'
+                    : 'border-surface-alt hover:border-success hover:text-success'
+                }`}
+              >
+                <div className="font-bold text-3xl mb-1">YES</div>
+                <div className="text-sm">{(event.currentOdds.yes * 100).toFixed(0)}%</div>
+              </button>
+              <button
+                onClick={() => setSelectedOutcome('no')}
+                className={`py-8 border-2 font-mono text-center transition-all ${
+                  selectedOutcome === 'no'
+                    ? 'border-danger bg-danger/10 text-danger'
+                    : 'border-surface-alt hover:border-danger hover:text-danger'
+                }`}
+              >
+                <div className="font-bold text-3xl mb-1">NO</div>
+                <div className="text-sm">{(event.currentOdds.no * 100).toFixed(0)}%</div>
+              </button>
             </div>
 
-            {/* Resolved Section */}
             {event.resolved && (
-              <div className={`p-4 rounded-lg border-l-4 ${
+              <div className={`p-4 border-l-4 ${
                 event.resolvedOutcome === 'yes'
-                  ? 'bg-green-900/20 border-success'
-                  : 'bg-red-900/20 border-danger'
+                  ? 'border-success bg-success/5'
+                  : 'border-danger bg-danger/5'
               }`}>
-                <p className="font-bold">
-                  Outcome: <span className="text-lg">{event.resolvedOutcome?.toUpperCase()}</span>
+                <p className="font-mono text-sm uppercase tracking-widest">
+                  RESULT: <span className="font-bold text-xl">{event.resolvedOutcome?.toUpperCase()}</span>
                 </p>
               </div>
             )}
           </div>
 
-          {/* Betting Card */}
           {event.status === 'open' && !event.resolved && (
             <BettingCard
               selectedOutcome={selectedOutcome}
