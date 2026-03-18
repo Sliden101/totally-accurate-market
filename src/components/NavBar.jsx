@@ -20,7 +20,7 @@ export default function NavBar() {
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="flex items-center gap-2 font-display font-bold text-2xl tracking-tight">
             <Zap className="w-6 h-6 text-primary" />
-            <span className="hidden sm:inline">TAM</span>
+            <span className="hidden sm:inline">JAK</span>
           </Link>
 
           <div className="hidden md:flex items-center gap-8">
@@ -28,6 +28,9 @@ export default function NavBar() {
               <>
                 <Link to="/events" className="font-mono text-sm uppercase tracking-widest hover:text-primary transition-colors">
                   MARKETS
+                </Link>
+                <Link to="/bets" className="font-mono text-sm uppercase tracking-widest hover:text-primary transition-colors">
+                  BETS
                 </Link>
                 <Link to="/wallet" className="flex items-center gap-2 font-mono text-sm hover:text-primary transition-colors">
                   <Wallet className="w-4 h-4" />
@@ -71,6 +74,13 @@ export default function NavBar() {
                     onClick={() => setIsOpen(false)}
                   >
                     MARKETS
+                  </Link>
+                  <Link
+                    to="/bets"
+                    className="font-mono text-sm uppercase tracking-widest whitespace-nowrap"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    BETS
                   </Link>
                   <Link
                     to="/wallet"

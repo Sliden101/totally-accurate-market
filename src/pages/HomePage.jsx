@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import { useEvents } from '../context/EventContext'
 import { ChevronRight } from 'lucide-react'
 import EventCard from '../components/EventCard'
+import BackgroundEvents from '../components/BackgroundEvents'
 
 export default function HomePage() {
   const { user } = useAuth()
@@ -11,8 +12,9 @@ export default function HomePage() {
 
   return (
     <div className="w-full">
-      <section className="min-h-screen flex items-center px-4 py-20 bg-background">
-        <div className="max-w-4xl mx-auto">
+      <section className="min-h-screen flex items-center px-4 py-20 bg-background relative overflow-hidden">
+        <BackgroundEvents />
+        <div className="max-w-4xl mx-auto relative z-10">
           <div className="space-y-8">
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-display font-bold leading-none tracking-tight">
               BET ON

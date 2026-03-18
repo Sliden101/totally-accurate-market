@@ -10,6 +10,7 @@ import RegisterPage from './pages/RegisterPage'
 import EventsPage from './pages/EventsPage'
 import EventDetailPage from './pages/EventDetailPage'
 import WalletPage from './pages/WalletPage'
+import BetsPage from './pages/BetsPage'
 import ProtectedRoute from './components/ProtectedRoute'
 import NavBar from './components/NavBar'
 import NotificationContainer from './components/NotificationContainer'
@@ -32,6 +33,7 @@ function App() {
                       <Route path="/events" element={<ProtectedRoute><EventsPage /></ProtectedRoute>} />
                       <Route path="/event/:id" element={<ProtectedRoute><EventDetailPage /></ProtectedRoute>} />
                       <Route path="/wallet" element={<ProtectedRoute><WalletPage /></ProtectedRoute>} />
+                      <Route path="/bets" element={<ProtectedRoute><BetsPage /></ProtectedRoute>} />
                       <Route path="*" element={<Navigate to="/" replace />} />
                     </Routes>
                   </main>
