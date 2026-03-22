@@ -10,14 +10,18 @@ export default function EventsPage() {
   const [selectedCategory, setSelectedCategory] = useState('All')
   
   const allEvents = getOpenEvents()
+  console.log('🎯 EventsPage - All events:', allEvents)
+  console.log('🎯 EventsPage - Events count:', allEvents.length)
   
   const filteredEvents = useMemo(() => {
-    return allEvents.filter(event => {
+    const filtered = allEvents.filter(event => {
       const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         event.description.toLowerCase().includes(searchTerm.toLowerCase())
       const matchesCategory = selectedCategory === 'All' || event.category === selectedCategory
       return matchesSearch && matchesCategory
     })
+    console.log('🎯 EventsPage - Filtered events:', filtered)
+    return filtered
   }, [allEvents, searchTerm, selectedCategory])
 
   return (

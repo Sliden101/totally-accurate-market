@@ -12,7 +12,7 @@ export default function EventDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { getEventById } = useEvents()
-  const { user } = useAuth()
+  const { user, refreshUser } = useAuth()
   const { placeBet } = useBets()
   const { getBalance } = useWallet()
   const { success, error } = useNotification()
@@ -35,18 +35,24 @@ export default function EventDetailPage() {
   }
 
   const handlePlaceBet = () => {
-    if (!selectedOutcome) {
-      error('PICK AN OUTCOME')
+    if (!selectedOutcome || !betAmount) {
+      error('SELECT OUTCOME AND ENTER AMOUNT')
       return
     }
 
-    if (!betAmount || parseFloat(betAmount) <= 0) {
-      error('ENTER AN AMOUNT')
-      return
-    }
-
+    // Refresh user data to get latest balance from localStorage
+    refreshUser()
+    
     const amount = parseFloat(betAmount)
-    if (amount > getBalance()) {
+    const currentBalance = getBalance()
+    
+    console.log(`💰 Betting check:`)
+    console.log(`  - User state balance: $${user?.balance || 0}`)
+    console.log(`  - Fresh balance: $${currentBalance}`)
+    console.log(`  - Bet amount: $${amount}`)
+    console.log(`  - Can bet: ${amount <= currentBalance}`)
+    
+    if (amount > currentBalance) {
       error('INSUFFICIENT BALANCE')
       return
     }
@@ -56,7 +62,10 @@ export default function EventDetailPage() {
       success(`BET PLACED: $${amount} ON ${selectedOutcome.toUpperCase()}`)
       setBetAmount('')
       setSelectedOutcome(null)
+      // Refresh again after betting to update UI
+      refreshUser()
     } catch (err) {
+      console.error('❌ Bet failed:', err.message)
       error('BET FAILED')
     }
   }
@@ -120,28 +129,20 @@ export default function EventDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
             <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => setSelectedOutcome('yes')}
-                className={`py-8 border-2 font-mono text-center transition-all ${
-                  selectedOutcome === 'yes'
-                    ? 'border-success bg-success/10 text-success'
-                    : 'border-surface-alt hover:border-success hover:text-success'
-                }`}
-              >
-                <div className="font-bold text-3xl mb-1">YES</div>
-                <div className="text-sm">{(event.currentOdds.yes * 100).toFixed(0)}%</div>
-              </button>
-              <button
-                onClick={() => setSelectedOutcome('no')}
-                className={`py-8 border-2 font-mono text-center transition-all ${
-                  selectedOutcome === 'no'
-                    ? 'border-danger bg-danger/10 text-danger'
-                    : 'border-surface-alt hover:border-danger hover:text-danger'
-                }`}
-              >
-                <div className="font-bold text-3xl mb-1">NO</div>
-                <div className="text-sm">{(event.currentOdds.no * 100).toFixed(0)}%</div>
-              </button>
+              {Object.keys(event.currentOdds).map(outcome => (
+                <button
+                  onClick={() => setSelectedOutcome(outcome)}
+                  className={`py-8 border-2 font-mono text-center transition-all ${
+                    selectedOutcome === outcome
+                      ? 'border-success bg-success/10 text-success'
+                      : 'border-surface-alt hover:border-success hover:text-success'
+                  }`}
+                >
+                  <div className="font-bold text-3xl mb-1">{outcome.toUpperCase()}</div>
+                  <div className="text-sm">{(event.currentOdds[outcome] * 100).toFixed(0)}%</div>
+                </button>
+              ))}
+            </div>
             </div>
 
             {event.resolved && (
@@ -155,9 +156,18 @@ export default function EventDetailPage() {
                 </p>
               </div>
             )}
-          </div>
-
-          {event.status === 'open' && !event.resolved && (
+          {event.resolved && (
+            <div className={`p-4 border-l-4 ${
+              event.resolvedOutcome === 'yes'
+                ? 'border-success bg-success/5'
+                : 'border-danger bg-danger/5'
+            }`}>
+              <p className="font-mono text-sm uppercase tracking-widest">
+                RESULT: <span className="font-bold text-xl">{event.resolvedOutcome?.toUpperCase()}</span>
+              </p>
+            </div>
+          )}
+          {event.status === 'open' && (
             <BettingCard
               selectedOutcome={selectedOutcome}
               betAmount={betAmount}

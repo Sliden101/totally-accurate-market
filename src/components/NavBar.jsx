@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { Menu, X, Wallet, Zap } from 'lucide-react'
+import { Menu, X, Wallet, Zap, Settings, Trophy } from 'lucide-react'
 
 export default function NavBar() {
-  const { user, logout } = useAuth()
+  const { user, logout, isAdmin } = useAuth()
   const navigate = useNavigate()
   const [isOpen, setIsOpen] = useState(false)
 
@@ -32,10 +32,20 @@ export default function NavBar() {
                 <Link to="/bets" className="font-mono text-sm uppercase tracking-widest hover:text-primary transition-colors">
                   BETS
                 </Link>
+                <Link to="/leaderboard" className="font-mono text-sm uppercase tracking-widest hover:text-primary transition-colors flex items-center gap-1">
+                  <Trophy className="w-4 h-4" />
+                  LEADERBOARD
+                </Link>
                 <Link to="/wallet" className="flex items-center gap-2 font-mono text-sm hover:text-primary transition-colors">
                   <Wallet className="w-4 h-4" />
                   <span className="text-primary">${user.balance.toFixed(2)}</span>
                 </Link>
+                {isAdmin() && (
+                  <Link to="/admin" className="font-mono text-sm uppercase tracking-widest hover:text-accent transition-colors flex items-center gap-1">
+                    <Settings className="w-4 h-4" />
+                    ADMIN
+                  </Link>
+                )}
                 <button
                   onClick={handleLogout}
                   className="font-mono text-sm uppercase tracking-widest hover:text-danger transition-colors"
@@ -83,12 +93,28 @@ export default function NavBar() {
                     BETS
                   </Link>
                   <Link
+                    to="/leaderboard"
+                    className="font-mono text-sm uppercase tracking-widest whitespace-nowrap"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    LEADERBOARD
+                  </Link>
+                  <Link
                     to="/wallet"
                     className="font-mono text-sm uppercase tracking-widest whitespace-nowrap text-primary"
                     onClick={() => setIsOpen(false)}
                   >
                     ${user.balance.toFixed(2)}
                   </Link>
+                  {isAdmin() && (
+                    <Link
+                      to="/admin"
+                      className="font-mono text-sm uppercase tracking-widest whitespace-nowrap text-accent"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      ADMIN
+                    </Link>
+                  )}
                   <button
                     onClick={handleLogout}
                     className="font-mono text-sm uppercase tracking-widest whitespace-nowrap text-danger"

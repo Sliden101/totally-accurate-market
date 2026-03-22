@@ -35,7 +35,11 @@ export default function RegisterPage() {
       success('WELCOME. $1,000 FREE MONEY ADDED.')
       navigate('/events')
     } catch (err) {
-      error('REGISTRATION FAILED')
+      if (err.message === 'User already exists') {
+        error('USER ALREADY EXISTS WITH THIS EMAIL')
+      } else {
+        error('REGISTRATION FAILED')
+      }
     }
   }
 

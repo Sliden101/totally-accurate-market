@@ -17,6 +17,14 @@ export function BetProvider({ children }) {
   }, [user])
 
   const placeBet = (eventId, outcome, amount) => {
+    // Check if user has sufficient balance
+    const allUsers = JSON.parse(localStorage.getItem('allUsers') || '[]')
+    const currentUser = allUsers.find(u => u.id === user.id)
+    
+    if (!currentUser || currentUser.balance < amount) {
+      throw new Error('Insufficient balance')
+    }
+
     const bet = {
       id: Date.now().toString(),
       userId: user.id,
@@ -39,6 +47,20 @@ export function BetProvider({ children }) {
       localStorage.setItem(`bets_${user.id}`, JSON.stringify(newBets))
     }
 
+    // Deduct balance from user
+    const updatedUsers = allUsers.map(u => 
+      u.id === user.id ? { ...u, balance: u.balance - amount } : u
+    )
+    localStorage.setItem('allUsers', JSON.stringify(updatedUsers))
+    
+    // Update current session
+    const updatedCurrentUser = updatedUsers.find(u => u.id === user.id)
+    if (updatedCurrentUser) {
+      localStorage.setItem('user', JSON.stringify(updatedCurrentUser))
+      // Trigger a storage event to update other components
+      window.dispatchEvent(new Event('storage'))
+    }
+
     return bet
   }
 
@@ -58,10 +80,23 @@ export function BetProvider({ children }) {
     return bets.filter(b => b.eventId === eventId)
   }
 
-  const settleBet = (betId, eventOutcome) => {
-    const updated = bets.map(b => {
+  const settleBet = (betId, eventOutcome, targetUserId = null) => {
+    // If targetUserId is provided, settle bet for that specific user
+    // Otherwise, settle for current user (backward compatibility)
+    const userId = targetUserId || user?.id
+    
+    if (!userId) {
+      console.error('❌ No user ID provided for bet settlement')
+      return null
+    }
+
+    // Get the specific user's bets
+    const userBets = JSON.parse(localStorage.getItem(`bets_${userId}`) || '[]')
+    
+    const updatedBets = userBets.map(b => {
       if (b.id === betId) {
         const won = b.outcome === eventOutcome
+        console.log(`🎯 Settling bet ${betId} for user ${userId}: ${b.outcome} vs ${eventOutcome} = ${won ? 'WIN' : 'LOSE'}`)
         return {
           ...b,
           status: 'settled',
@@ -73,12 +108,48 @@ export function BetProvider({ children }) {
       return b
     })
 
-    setBets(updated)
-    if (user) {
-      localStorage.setItem(`bets_${user.id}`, JSON.stringify(updated))
+    // Save the updated bets for this user
+    localStorage.setItem(`bets_${userId}`, JSON.stringify(updatedBets))
+    
+    const settledBet = updatedBets.find(b => b.id === betId)
+    
+    // If user won, add winnings to their balance
+    if (settledBet && settledBet.won) {
+      console.log(`💰 User ${userId} won $${settledBet.potentialPayout}!`)
+      
+      const allUsers = JSON.parse(localStorage.getItem('allUsers') || '[]')
+      const userBeforeUpdate = allUsers.find(u => u.id === userId)
+      console.log(`💸 User balance before: $${userBeforeUpdate?.balance || 0}`)
+      
+      const updatedUsers = allUsers.map(u => 
+        u.id === userId ? { ...u, balance: u.balance + settledBet.potentialPayout } : u
+      )
+      localStorage.setItem('allUsers', JSON.stringify(updatedUsers))
+      
+      const userAfterUpdate = updatedUsers.find(u => u.id === userId)
+      console.log(`💸 User balance after: $${userAfterUpdate?.balance || 0}`)
+      
+      // Update current session if this is the logged-in user
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}')
+      if (currentUser.id === userId) {
+        const updatedCurrentUser = updatedUsers.find(u => u.id === userId)
+        if (updatedCurrentUser) {
+          localStorage.setItem('user', JSON.stringify(updatedCurrentUser))
+          console.log(`🔄 Updated current user session: $${updatedCurrentUser.balance}`)
+          // Trigger UI update
+          window.dispatchEvent(new Event('storage'))
+        }
+      }
+    } else {
+      console.log(`❌ User ${userId} lost bet $${settledBet?.amount}`)
     }
 
-    return updated.find(b => b.id === betId)
+    // Update current user's bets state if this is the logged-in user
+    if (user && user.id === userId) {
+      setBets(updatedBets)
+    }
+
+    return settledBet
   }
 
   const getWinRate = () => {
@@ -97,6 +168,64 @@ export function BetProvider({ children }) {
     return won.reduce((sum, b) => sum + b.potentialPayout, 0)
   }
 
+  const getAllUsersBets = () => {
+    const allBets = []
+    const users = JSON.parse(localStorage.getItem('allUsers') || '[]')
+    
+    users.forEach(user => {
+      const userBets = JSON.parse(localStorage.getItem(`bets_${user.id}`) || '[]')
+      allBets.push(...userBets.map(bet => ({ ...bet, user })))
+    })
+    
+    return allBets
+  }
+
+  const getUserStats = (userId) => {
+    const userBets = JSON.parse(localStorage.getItem(`bets_${userId}`) || '[]')
+    console.log(`📊 getUserStats for ${userId}: Found ${userBets.length} total bets`)
+    
+    const settled = userBets.filter(b => b.status === 'settled')
+    const won = settled.filter(b => b.won)
+    const totalWinnings = won.reduce((sum, b) => sum + b.potentialPayout, 0)
+    const winRate = settled.length > 0 ? ((won.length / settled.length) * 100).toFixed(1) : 0
+    
+    console.log(`📈 Stats for ${userId}:`)
+    console.log(`  - Total bets: ${userBets.length}`)
+    console.log(`  - Settled bets: ${settled.length}`)
+    console.log(`  - Won bets: ${won.length}`)
+    console.log(`  - Total winnings: $${totalWinnings}`)
+    console.log(`  - Win rate: ${winRate}%`)
+    
+    return {
+      totalBets: userBets.length,
+      settledBets: settled.length,
+      wonBets: won.length,
+      totalWinnings,
+      winRate: parseFloat(winRate),
+      totalWagered: userBets.reduce((sum, b) => sum + b.amountPlaced, 0)
+    }
+  }
+
+  const getLeaderboardData = () => {
+    const users = JSON.parse(localStorage.getItem('allUsers') || '[]')
+    const leaderboard = users
+      .filter(user => !isAdmin(user)) // Filter out admin users
+      .map(user => {
+        const stats = getUserStats(user.id)
+        return {
+          ...user,
+          ...stats
+        }
+      }) // Show all non-admin users, even if they haven't bet yet
+    
+    return leaderboard.sort((a, b) => b.totalWinnings - a.totalWinnings)
+  }
+
+  // Helper function to check if user is admin
+  const isAdmin = (user) => {
+    return user && (user.email === 'admin@jak.com' || user.email?.includes('admin'))
+  }
+
   return (
     <BetContext.Provider
       value={{
@@ -109,7 +238,10 @@ export function BetProvider({ children }) {
         settleBet,
         getWinRate,
         getTotalWagered,
-        getTotalWinnings
+        getTotalWinnings,
+        getAllUsersBets,
+        getUserStats,
+        getLeaderboardData
       }}
     >
       {children}

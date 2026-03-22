@@ -17,7 +17,11 @@ export function WalletProvider({ children }) {
   }, [user])
 
   const getBalance = () => {
-    return user?.balance || 0
+    // Always read fresh balance from localStorage to avoid state sync issues
+    if (!user) return 0
+    
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}')
+    return currentUser.balance || 0
   }
 
   const addTransaction = (type, amount, description, eventId) => {
