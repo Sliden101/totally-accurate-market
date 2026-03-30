@@ -107,6 +107,7 @@ export default function AdminCreateEvent() {
       title: formData.title,
       category: formData.category,
       description: formData.description,
+      outcomes: formData.outcomes,  // Add this line
       currentOdds: formData.odds,
       totalVolume: 0,
       endDate: formData.endDate,

@@ -34,6 +34,14 @@ export default function AdminDataManager() {
     setAllBets(newAllBets)
   }
 
+  const [selectedUser, setSelectedUser] = useState(null)
+  const [showUserBets, setShowUserBets] = useState(false)
+
+  const viewUserBets = (user) => {
+    setSelectedUser(user)
+    setShowUserBets(true)
+  }
+
   const deleteUser = (userId) => {
     if (confirm('Are you sure you want to delete this user and all their data?')) {
       // Delete user's bets
@@ -217,15 +225,8 @@ export default function AdminDataManager() {
         {/* Users Tab */}
         {activeTab === 'users' && (
           <div className="card">
-            <div className="flex items-center justify-between mb-6">
+            <div className="mb-6">
               <h2 className="text-2xl font-display font-bold">USER MANAGEMENT</h2>
-              <button
-                onClick={addTestUser}
-                className="button-primary"
-              >
-                <Plus className="w-4 h-4 inline mr-2" />
-                ADD TEST USER
-              </button>
             </div>
             
             <div className="overflow-x-auto">
@@ -260,18 +261,11 @@ export default function AdminDataManager() {
                         <td className="py-4 px-4">
                           <div className="flex gap-2 justify-center">
                             <button
-                              onClick={() => updateUserBalance(user.id, user.balance + 500)}
-                              className="button-ghost p-2 text-secondary"
-                              title="Add $500"
+                              onClick={() => viewUserBets(user)}
+                              className="button-ghost p-2 text-primary"
+                              title="View user bets"
                             >
-                              <DollarSign className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => updateUserBalance(user.id, 2000)}
-                              className="button-ghost p-2 text-accent"
-                              title="Set to $2000"
-                            >
-                              <Edit className="w-4 h-4" />
+                              <Target className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => deleteUser(user.id)}
@@ -294,15 +288,8 @@ export default function AdminDataManager() {
         {/* Events Tab */}
         {activeTab === 'events' && (
           <div className="card">
-            <div className="flex items-center justify-between mb-6">
+            <div className="mb-6">
               <h2 className="text-2xl font-display font-bold">EVENT MANAGEMENT</h2>
-              <button
-                onClick={addTestEvent}
-                className="button-primary"
-              >
-                <Plus className="w-4 h-4 inline mr-2" />
-                ADD TEST EVENT
-              </button>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -433,49 +420,125 @@ export default function AdminDataManager() {
           </div>
         )}
 
-        {/* Instructions */}
-        <div className="card">
-          <h3 className="font-display font-bold mb-4">QUICK ACTIONS</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <h4 className="font-mono text-sm text-text-muted">Generate Test Data:</h4>
-              <button
-                onClick={() => {
-                  // Add sample bets for each user
-                  users.forEach((user, index) => {
-                    if (index < 3) { // Only for first 3 users
-                      addTestBet(user.id, events[0]?.id || '1', 'yes', 200 + index * 100, Math.random() > 0.5)
-                      addTestBet(user.id, events[0]?.id || '1', 'no', 150 + index * 50, Math.random() > 0.7)
-                    }
-                  })
-                  success('Test bets generated for first 3 users')
-                }}
-                className="button-secondary w-full"
-              >
-                <Target className="w-4 h-4 inline mr-2" />
-                GENERATE TEST BETS
-              </button>
-            </div>
-            
-            <div className="space-y-2">
-              <h4 className="font-mono text-sm text-text-muted">Clear All Data:</h4>
-              <button
-                onClick={() => {
-                  if (confirm('This will delete ALL users, events, and bets. Are you sure?')) {
-                    localStorage.clear()
-                    success('All data cleared')
-                    navigate('/register')
-                  }
-                }}
-                className="button-danger w-full"
-              >
-                <Trash2 className="w-4 h-4 inline mr-2" />
-                CLEAR EVERYTHING
-              </button>
+        {/* User Bets Modal */}
+        {showUserBets && selectedUser && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-surface border border-surface-alt rounded-lg max-w-4xl w-full max-h-[80vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-display font-bold">
+                    BET HISTORY - {selectedUser.username}
+                  </h2>
+                  <button
+                    onClick={() => setShowUserBets(false)}
+                    className="button-ghost p-2"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-surface-alt rounded">
+                    <div>
+                      <div className="font-mono text-sm text-text-muted">Total Bets</div>
+                      <div className="font-mono text-xl font-bold">
+                        {allBets.filter(bet => bet.userId === selectedUser.id).length}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="font-mono text-sm text-text-muted">Total Wagered</div>
+                      <div className="font-mono text-xl font-bold text-primary">
+                        ${allBets
+                          .filter(bet => bet.userId === selectedUser.id)
+                          .reduce((sum, bet) => sum + bet.amount, 0)
+                          .toFixed(2)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="font-mono text-sm text-text-muted">Total Winnings</div>
+                      <div className="font-mono text-xl font-bold text-success">
+                        ${allBets
+                          .filter(bet => bet.userId === selectedUser.id && bet.won)
+                          .reduce((sum, bet) => sum + bet.potentialPayout, 0)
+                          .toFixed(2)}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b-2 border-surface-alt">
+                          <th className="text-left py-3 px-4 font-mono text-xs uppercase tracking-widest text-text-muted">EVENT</th>
+                          <th className="text-left py-3 px-4 font-mono text-xs uppercase tracking-widest text-text-muted">OUTCOME</th>
+                          <th className="text-right py-3 px-4 font-mono text-xs uppercase tracking-widest text-text-muted">AMOUNT</th>
+                          <th className="text-right py-3 px-4 font-mono text-xs uppercase tracking-widest text-text-muted">PAYOUT</th>
+                          <th className="text-center py-3 px-4 font-mono text-xs uppercase tracking-widest text-text-muted">STATUS</th>
+                          <th className="text-center py-3 px-4 font-mono text-xs uppercase tracking-widest text-text-muted">RESULT</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {allBets
+                          .filter(bet => bet.userId === selectedUser.id)
+                          .map(bet => (
+                            <tr key={bet.id} className="border-b border-surface-alt hover:bg-surface transition-colors">
+                              <td className="py-3 px-4">
+                                <div className="font-mono text-sm">
+                                  {events.find(e => e.id === bet.eventId)?.title || 'Unknown Event'}
+                                </div>
+                                <div className="font-mono text-xs text-text-muted">
+                                  {new Date(bet.createdAt).toLocaleDateString()}
+                                </div>
+                              </td>
+                              <td className="py-3 px-4">
+                                <span className={`font-mono capitalize ${
+                                  bet.won === true ? 'text-primary' : 
+                                  bet.won === false ? 'text-danger' : 'text-text-muted'
+                                }`}>
+                                  {bet.outcome}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4 text-right font-mono">${bet.amount}</td>
+                              <td className="py-3 px-4 text-right font-mono">
+                                <span className={bet.won ? 'text-primary' : ''}>
+                                  ${bet.potentialPayout.toFixed(2)}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4 text-center">
+                                <span className={`font-mono text-xs uppercase tracking-widest ${
+                                  bet.status === 'settled' ? 'text-accent' : 'text-text-muted'
+                                }`}>
+                                  {bet.status}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4 text-center">
+                                {bet.won === true && (
+                                  <span className="px-2 py-1 bg-success/10 text-success text-xs font-mono uppercase rounded">
+                                    WON
+                                  </span>
+                                )}
+                                {bet.won === false && (
+                                  <span className="px-2 py-1 bg-danger/10 text-danger text-xs font-mono uppercase rounded">
+                                    LOST
+                                  </span>
+                                )}
+                                {bet.won === null && (
+                                  <span className="px-2 py-1 bg-surface border border-surface-alt text-text-muted text-xs font-mono uppercase rounded">
+                                    PENDING
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        )}
+              </div>
     </div>
   )
 }

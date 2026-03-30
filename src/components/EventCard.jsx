@@ -30,19 +30,23 @@ export default function EventCard({ event }) {
           {event.title}
         </h3>
 
-        <div className="grid grid-cols-2 gap-4 py-4 border-y-2 border-surface-alt">
-          <div className="text-center">
-            <div className="font-mono text-xs text-text-muted mb-1">YES</div>
-            <div className="font-mono text-2xl font-bold text-success">
-              {(event.currentOdds.yes * 100).toFixed(0)}%
+        <div className={`grid gap-2 py-4 border-y-2 border-surface-alt ${
+          (event.outcomes || ['yes', 'no']).length === 2 ? 'grid-cols-2' : 
+          (event.outcomes || ['yes', 'no']).length === 3 ? 'grid-cols-3' : 
+          'grid-cols-4'
+        }`}>
+          {(event.outcomes || ['yes', 'no']).map((outcome, index) => (
+            <div key={outcome} className="text-center">
+              <div className="font-mono text-xs text-text-muted mb-1 truncate">
+                {outcome.toUpperCase()}
+              </div>
+              <div className={`font-mono text-lg font-bold ${
+                index % 2 === 0 ? 'text-success' : 'text-danger'
+              }`}>
+                {((event.currentOdds?.[outcome.toLowerCase()] || 0.5) * 100).toFixed(0)}%
+              </div>
             </div>
-          </div>
-          <div className="text-center">
-            <div className="font-mono text-xs text-text-muted mb-1">NO</div>
-            <div className="font-mono text-2xl font-bold text-danger">
-              {(event.currentOdds.no * 100).toFixed(0)}%
-            </div>
-          </div>
+          ))}
         </div>
 
         <div className="flex items-center justify-between font-mono text-xs text-text-muted pt-2">

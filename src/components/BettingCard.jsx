@@ -8,41 +8,14 @@ export default function BettingCard({
   event
 }) {
   const amount = parseFloat(betAmount) || 0
-  const odds = selectedOutcome === 'yes' ? event.currentOdds.yes : event.currentOdds.no
+  const outcomes = event.outcomes || ['yes', 'no'] // Fallback to yes/no for old events
+  const odds = selectedOutcome ? (event.currentOdds?.[selectedOutcome] || 0.5) : 0.5
   const potentialPayout = amount ? (amount / odds).toFixed(2) : '0.00'
 
   const quickAmounts = [10, 25, 50, 100]
 
   return (
     <div className="space-y-6">
-      <div className="space-y-3">
-        <label className="font-mono text-xs uppercase tracking-widest text-text-muted block">
-          YOUR PICK
-        </label>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={() => onOutcomeSelect('yes')}
-            className={`py-4 border-2 font-mono font-bold transition-all ${
-              selectedOutcome === 'yes'
-                ? 'border-success bg-success/10 text-success'
-                : 'border-surface-alt hover:border-success text-text'
-            }`}
-          >
-            YES
-          </button>
-          <button
-            onClick={() => onOutcomeSelect('no')}
-            className={`py-4 border-2 font-mono font-bold transition-all ${
-              selectedOutcome === 'no'
-                ? 'border-danger bg-danger/10 text-danger'
-                : 'border-surface-alt hover:border-danger text-text'
-            }`}
-          >
-            NO
-          </button>
-        </div>
-      </div>
-
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <label className="font-mono text-xs uppercase tracking-widest text-text-muted">
