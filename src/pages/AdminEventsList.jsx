@@ -39,12 +39,8 @@ export default function AdminEventsList() {
     const allBets = getAllUsersBets()
     const eventBets = allBets.filter(bet => bet.eventId === selectedEvent.id)
 
-    console.log(`🎯 Resolving event ${selectedEvent.id} with outcome: ${selectedOutcome}`)
-    console.log(`📊 Found ${eventBets.length} bets to settle`)
-
     // Settle all bets for each user individually
     eventBets.forEach(bet => {
-      console.log(`⚡ Settling bet for user ${bet.userId}`)
       settleBet(bet.id, selectedOutcome, bet.userId)
     })
 

@@ -41,14 +41,10 @@ export function AuthProvider({ children }) {
   const register = (email, password, username) => {
     // Check if user already exists
     const allUsers = JSON.parse(localStorage.getItem('allUsers') || '[]')
-    console.log('Current users:', allUsers)
-    console.log('Attempting to register:', email)
     
     const existingUser = allUsers.find(user => user.email === email)
-    console.log('Existing user found:', existingUser)
     
     if (existingUser) {
-      console.log('User already exists, throwing error')
       throw new Error('User already exists')
     }
     
@@ -60,8 +56,6 @@ export function AuthProvider({ children }) {
       balance: 1000,
       createdAt: new Date().toISOString()
     }
-    
-    console.log('Creating new user:', newUser)
     
     // Store user in current session
     localStorage.setItem('user', JSON.stringify(newUser))

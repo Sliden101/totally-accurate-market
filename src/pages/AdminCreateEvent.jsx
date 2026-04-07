@@ -86,21 +86,10 @@ export default function AdminCreateEvent() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    console.log('🚀 Form submitted!')
-    console.log('📝 Form data:', formData)
-    
     if (!formData.title || !formData.description || !formData.endDate) {
-      console.log('❌ Validation failed:', { title: !!formData.title, description: !!formData.description, endDate: !!formData.endDate })
       error('Please fill in all required fields')
       return
     }
-    
-    console.log('✅ Creating event:', {
-      title: formData.title,
-      category: formData.category,
-      outcomes: formData.outcomes.length,
-      endDate: formData.endDate
-    })
     
     const newEvent = {
       id: (events.length + 1).toString(),
@@ -115,13 +104,11 @@ export default function AdminCreateEvent() {
       resolved: false,
       image: formData.image || `https://images.unsplash.com/photo-${Date.now()}?w=400&h=300&fit=crop`
     }
-    
-    console.log('💾 Saving to localStorage...')
+
     const updatedEvents = [...events, newEvent]
     localStorage.setItem('events', JSON.stringify(updatedEvents))
-    console.log('✅ Events saved:', updatedEvents.length)
-    
-    console.log('🔄 Navigating to /admin/events...')
+    console.log(' Events saved:', updatedEvents.length)
+
     success('Event created successfully!')
     navigate('/admin/events')
   }

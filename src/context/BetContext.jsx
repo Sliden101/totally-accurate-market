@@ -86,7 +86,6 @@ export function BetProvider({ children }) {
     const userId = targetUserId || user?.id
     
     if (!userId) {
-      console.error('❌ No user ID provided for bet settlement')
       return null
     }
 
@@ -96,7 +95,6 @@ export function BetProvider({ children }) {
     const updatedBets = userBets.map(b => {
       if (b.id === betId) {
         const won = b.outcome === eventOutcome
-        console.log(`🎯 Settling bet ${betId} for user ${userId}: ${b.outcome} vs ${eventOutcome} = ${won ? 'WIN' : 'LOSE'}`)
         return {
           ...b,
           status: 'settled',
@@ -115,19 +113,15 @@ export function BetProvider({ children }) {
     
     // If user won, add winnings to their balance
     if (settledBet && settledBet.won) {
-      console.log(`💰 User ${userId} won $${settledBet.potentialPayout}!`)
       
       const allUsers = JSON.parse(localStorage.getItem('allUsers') || '[]')
       const userBeforeUpdate = allUsers.find(u => u.id === userId)
-      console.log(`💸 User balance before: $${userBeforeUpdate?.balance || 0}`)
-      
       const updatedUsers = allUsers.map(u => 
         u.id === userId ? { ...u, balance: u.balance + settledBet.potentialPayout } : u
       )
       localStorage.setItem('allUsers', JSON.stringify(updatedUsers))
       
       const userAfterUpdate = updatedUsers.find(u => u.id === userId)
-      console.log(`💸 User balance after: $${userAfterUpdate?.balance || 0}`)
       
       // Update current session if this is the logged-in user
       const currentUser = JSON.parse(localStorage.getItem('user') || '{}')
@@ -140,8 +134,6 @@ export function BetProvider({ children }) {
           window.dispatchEvent(new Event('storage'))
         }
       }
-    } else {
-      console.log(`❌ User ${userId} lost bet $${settledBet?.amount}`)
     }
 
     // Update current user's bets state if this is the logged-in user
@@ -182,19 +174,11 @@ export function BetProvider({ children }) {
 
   const getUserStats = (userId) => {
     const userBets = JSON.parse(localStorage.getItem(`bets_${userId}`) || '[]')
-    console.log(`📊 getUserStats for ${userId}: Found ${userBets.length} total bets`)
     
     const settled = userBets.filter(b => b.status === 'settled')
     const won = settled.filter(b => b.won)
     const totalWinnings = won.reduce((sum, b) => sum + b.potentialPayout, 0)
     const winRate = settled.length > 0 ? ((won.length / settled.length) * 100).toFixed(1) : 0
-    
-    console.log(`📈 Stats for ${userId}:`)
-    console.log(`  - Total bets: ${userBets.length}`)
-    console.log(`  - Settled bets: ${settled.length}`)
-    console.log(`  - Won bets: ${won.length}`)
-    console.log(`  - Total winnings: $${totalWinnings}`)
-    console.log(`  - Win rate: ${winRate}%`)
     
     return {
       totalBets: userBets.length,

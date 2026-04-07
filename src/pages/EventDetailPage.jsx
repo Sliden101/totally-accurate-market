@@ -46,12 +46,6 @@ export default function EventDetailPage() {
     const amount = parseFloat(betAmount)
     const currentBalance = getBalance()
     
-    console.log(`💰 Betting check:`)
-    console.log(`  - User state balance: $${user?.balance || 0}`)
-    console.log(`  - Fresh balance: $${currentBalance}`)
-    console.log(`  - Bet amount: $${amount}`)
-    console.log(`  - Can bet: ${amount <= currentBalance}`)
-    
     if (amount > currentBalance) {
       error('INSUFFICIENT BALANCE')
       return
@@ -65,7 +59,6 @@ export default function EventDetailPage() {
       // Refresh again after betting to update UI
       refreshUser()
     } catch (err) {
-      console.error('❌ Bet failed:', err.message)
       error('BET FAILED')
     }
   }

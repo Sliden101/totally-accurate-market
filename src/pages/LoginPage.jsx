@@ -76,15 +76,11 @@ export default function LoginPage() {
         </form>
 
         <p className="font-mono text-sm text-text-muted">
-          NO ACCOUNT?{' '}
+          Don't have an account?{' '}
           <Link to="/register" className="text-primary hover:underline">
             JOIN
           </Link>
         </p>
-
-        <div className="border border-surface-alt p-4 font-mono text-xs text-text-muted">
-          <span className="text-primary">DEMO:</span> demo@example.com / demo123
-        </div>
       </div>
     </div>
   )

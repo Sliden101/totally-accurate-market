@@ -7,7 +7,6 @@ export default function LeaderboardPage() {
   const [sortBy, setSortBy] = useState('winnings') // 'winnings' or 'winRate'
   
   const leaderboardData = getLeaderboardData()
-  console.log('🏆 Leaderboard data:', leaderboardData)
   
   const sortedData = [...leaderboardData].sort((a, b) => {
     if (sortBy === 'winnings') {
